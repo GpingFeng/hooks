@@ -8,6 +8,7 @@ function useSet<K>(initialValue?: Iterable<K>) {
 
   const [set, setSet] = useState<Set<K>>(() => getInitValue());
 
+  // 添加
   const add = (key: K) => {
     if (set.has(key)) {
       return;
@@ -19,6 +20,7 @@ function useSet<K>(initialValue?: Iterable<K>) {
     });
   };
 
+  // 移除
   const remove = (key: K) => {
     if (!set.has(key)) {
       return;
@@ -30,6 +32,7 @@ function useSet<K>(initialValue?: Iterable<K>) {
     });
   };
 
+  // 重置
   const reset = () => setSet(getInitValue());
 
   return [

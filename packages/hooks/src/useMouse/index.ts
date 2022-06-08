@@ -36,6 +36,7 @@ const initState: CursorState = {
 export default (target?: BasicTarget) => {
   const [state, setState] = useRafState(initState);
 
+  // 监听 mousemove
   useEventListener(
     'mousemove',
     (event: MouseEvent) => {

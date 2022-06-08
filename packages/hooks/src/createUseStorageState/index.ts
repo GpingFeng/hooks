@@ -27,7 +27,7 @@ export function createUseStorageState(getStorage: () => Storage | undefined) {
     } catch (err) {
       console.error(err);
     }
-
+    // 自定义序列化方法
     const serializer = (value: T) => {
       if (options?.serializer) {
         return options?.serializer(value);
@@ -35,6 +35,7 @@ export function createUseStorageState(getStorage: () => Storage | undefined) {
       return JSON.stringify(value);
     };
 
+    // 自定义反序列化方法
     const deserializer = (value: string) => {
       if (options?.deserializer) {
         return options?.deserializer(value);
@@ -51,6 +52,7 @@ export function createUseStorageState(getStorage: () => Storage | undefined) {
       } catch (e) {
         console.error(e);
       }
+      // 默认值
       if (isFunction(options?.defaultValue)) {
         return options?.defaultValue();
       }
@@ -59,14 +61,18 @@ export function createUseStorageState(getStorage: () => Storage | undefined) {
 
     const [state, setState] = useState<T | undefined>(() => getStoredValue());
 
+    // 当 key 更新的时候执行
     useUpdateEffect(() => {
       setState(getStoredValue());
     }, [key]);
 
+    // 设置 State
     const updateState = (value?: T | IFuncUpdater<T>) => {
+      // 如果是 undefined，则移除选项
       if (isUndef(value)) {
         setState(undefined);
         storage?.removeItem(key);
+        // 如果是function，则用来吹 state
       } else if (isFunction(value)) {
         const currentState = value(state);
         try {
@@ -76,6 +82,7 @@ export function createUseStorageState(getStorage: () => Storage | undefined) {
           console.error(e);
         }
       } else {
+        // 设置值
         try {
           setState(value);
           storage?.setItem(key, serializer(value));

@@ -3,8 +3,10 @@ import { parse, stringify } from 'query-string';
 import type { ParseOptions, StringifyOptions } from 'query-string';
 import { useMemo, useRef } from 'react';
 import type * as React from 'react';
+// react router
 import * as tmp from 'react-router';
 
+// 通过 url query 来管理 state 的 Hook。
 // ignore waring `"export 'useNavigate' (imported as 'rc') was not found in 'react-router'`
 const rc = tmp as any;
 
@@ -27,17 +29,29 @@ const baseStringifyConfig: StringifyOptions = {
 type UrlState = Record<string, any>;
 
 const useUrlState = <S extends UrlState = UrlState>(
+  // 初始状态
   initialState?: S | (() => S),
+  // url 配置
   options?: Options,
 ) => {
   type State = Partial<{ [key in keyof S]: any }>;
-  const { navigateMode = 'push', parseOptions, stringifyOptions } = options || {};
+  const {
+    // 状态变更时切换 history 的方式
+    navigateMode = 'push',
+    // query-string parse 的配置
+    parseOptions,
+    // query-string stringify 的配置
+    stringifyOptions,
+  } = options || {};
 
   const mergedParseOptions = { ...baseParseConfig, ...parseOptions };
   const mergedStringifyOptions = { ...baseStringifyConfig, ...stringifyOptions };
 
+  // useLocation钩子返回表示当前URL的location对象。您可以将它想象成一个useState，它在URL更改时返回一个新位置。
   const location = rc.useLocation();
 
+  // https://v5.reactrouter.com/web/api/Hooks/usehistory
+  // useHistory 钩子可以访问用来导航的历史实例。
   // react-router v5
   const history = rc.useHistory?.();
   // react-router v6
@@ -49,6 +63,7 @@ const useUrlState = <S extends UrlState = UrlState>(
     typeof initialState === 'function' ? (initialState as () => S)() : initialState || {},
   );
 
+  // 根据 url query
   const queryFromUrl = useMemo(() => {
     return parse(location.search, mergedParseOptions);
   }, [location.search]);
@@ -61,6 +76,8 @@ const useUrlState = <S extends UrlState = UrlState>(
     [queryFromUrl],
   );
 
+  // 用法同 useState，但 state 需要是 object
+  // 设置 url 状态
   const setState = (s: React.SetStateAction<State>) => {
     const newQuery = typeof s === 'function' ? s(targetQuery) : s;
 

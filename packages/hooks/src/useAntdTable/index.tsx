@@ -17,22 +17,31 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
   options: AntdTableOptions<TData, TParams> = {},
 ) => {
   const {
+    // form 实例
     form,
+    // 默认表单选项
     defaultType = 'simple',
+    // 默认参数，第一项为分页数据，第二项为表单数据。[pagination, formData]
     defaultParams,
     manual = false,
+    // refreshDeps 变化，会重置 current 到第一页，并重新发起请求。
     refreshDeps = [],
     ready = true,
     ...rest
   } = options;
 
+  // 对分页的逻辑进行处理
+  // 分页也是对 useRequest 的再封装
   const result = usePagination<TData, TParams>(service, {
     manual: true,
     ...rest,
   });
 
+  // params - 请求的参数
+  // run - 用来执行请求
   const { params = [], run } = result;
 
+  // TODO:缓存？
   const cacheFormTableData = params[2] || ({} as any);
 
   const [type, setType] = useState(cacheFormTableData?.type || defaultType);
@@ -40,9 +49,11 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
   const allFormDataRef = useRef<Record<string, any>>({});
   const defaultDataSourceRef = useRef([]);
 
+  // 判断是否为 Antd 的第四版本
   const isAntdV4 = !!form?.getInternalHooks;
 
   // get current active field values
+  // 获取当前的 from 值
   const getActivetFieldValues = () => {
     if (!form) {
       return {};
@@ -65,6 +76,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
     return activeFieldsValue;
   };
 
+  // 校验逻辑
   const validateFields = (): Promise<Record<string, any>> => {
     if (!form) {
       return Promise.resolve({});
@@ -88,6 +100,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
     });
   };
 
+  // 重置表单
   const restoreForm = () => {
     if (!form) {
       return;
@@ -109,11 +122,14 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
   };
 
   const changeType = () => {
+    // 获取当前表单值
     const activeFieldsValue = getActivetFieldValues();
+    // 修改表单值
     allFormDataRef.current = {
       ...allFormDataRef.current,
       ...activeFieldsValue,
     };
+    // 设置表单类型
     setType((t) => (t === 'simple' ? 'advance' : 'simple'));
   };
 
@@ -121,20 +137,24 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
     if (!ready) {
       return;
     }
+    // TODO:这里为什么要 setTimeout?
     setTimeout(() => {
+      // 先进行校验
       validateFields()
         .then((values = {}) => {
+          // 分页的逻辑
           const pagination = initPagination || {
             pageSize: options.defaultPageSize || 10,
             ...(params?.[0] || {}),
             current: 1,
           };
+          // 假如没有 form，则直接根据分页的逻辑进行请求
           if (!form) {
             // @ts-ignore
             run(pagination);
             return;
           }
-
+          // 获取到当前所有 form 的 Data 参数
           // record all form data
           allFormDataRef.current = {
             ...allFormDataRef.current,
@@ -151,6 +171,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
     });
   };
 
+  // 重置表单
   const reset = () => {
     if (form) {
       form.resetFields();
@@ -158,11 +179,13 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
     _submit();
   };
 
+  // 提交
   const submit = (e?: any) => {
     e?.preventDefault?.();
     _submit();
   };
 
+  // Table 组件的 onChange 事件
   const onTableChange = (pagination: any, filters: any, sorter: any) => {
     const [oldPaginationParams, ...restParams] = params || [];
     run(
@@ -177,17 +200,21 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
       ...restParams,
     );
   };
-
+  // 初始化逻辑
   // init
   useEffect(() => {
     // if has cache, use cached params. ignore manual and ready.
+    // params.length > 0，则说明有缓存
     if (params.length > 0) {
+      // 使用缓存的数据
       allFormDataRef.current = cacheFormTableData?.allFormData || {};
+      // 重置表单后执行请求
       restoreForm();
       // @ts-ignore
       run(...params);
       return;
     }
+    // 非手动并且已经 ready，则执行 _submit
     if (!manual && ready) {
       allFormDataRef.current = defaultParams?.[1] || {};
       restoreForm();
@@ -196,6 +223,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
   }, []);
 
   // change search type, restore form data
+  // 修改 type，则重置 form 表单数据
   useUpdateEffect(() => {
     if (!ready) {
       return;
@@ -219,6 +247,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
     }
   }, [ready]);
 
+  // 当依赖发生变更的时候，会重置 current 到第一页，并重新发起请求。
   useUpdateEffect(() => {
     if (hasAutoRun.current) {
       return;
@@ -234,6 +263,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
 
   return {
     ...result,
+    // Table 组件需要的数据，直接透传给 Table 组件即可
     tableProps: {
       dataSource: result.data?.list || defaultDataSourceRef.current,
       loading: result.loading,
@@ -245,9 +275,13 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
       },
     },
     search: {
+      // 提交表单
       submit: useMemoizedFn(submit),
+      // 当前表单类型， simple | advance
       type,
+      // 切换表单类型
       changeType: useMemoizedFn(changeType),
+      // 重置当前表单
       reset: useMemoizedFn(reset),
     },
   } as AntdTableResult<TData, TParams>;

@@ -7,11 +7,12 @@ export interface Options {
   onLeave?: () => void;
 }
 
+// 监听 DOM 元素是否有鼠标悬停。
 export default (target: BasicTarget, options?: Options): boolean => {
   const { onEnter, onLeave } = options || {};
 
   const [state, { setTrue, setFalse }] = useBoolean(false);
-
+  // 通过监听 mouseenter 判断有鼠标悬停
   useEventListener(
     'mouseenter',
     () => {
@@ -23,6 +24,7 @@ export default (target: BasicTarget, options?: Options): boolean => {
     },
   );
 
+  // mouseleave 没有鼠标悬停
   useEventListener(
     'mouseleave',
     () => {

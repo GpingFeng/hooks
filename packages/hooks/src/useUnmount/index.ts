@@ -12,6 +12,8 @@ const useUnmount = (fn: () => void) => {
   const fnRef = useLatest(fn);
 
   useEffect(
+    // 在组件卸载（unmount）时执行的 Hook。
+    // useEffect 的返回值中执行函数
     () => () => {
       fnRef.current();
     },

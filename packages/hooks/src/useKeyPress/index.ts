@@ -207,7 +207,7 @@ function genKeyFormater(keyFilter: KeyFilter, exactMatch: boolean): KeyPredicate
 }
 
 const defaultEvents: KeyEvent[] = ['keydown'];
-
+// 监听键盘按键，支持组合键，支持按键别名。
 function useKeyPress(keyFilter: KeyFilter, eventHandler: EventHandler, option?: Options) {
   const { events = defaultEvents, target, exactMatch = false } = option || {};
   const eventHandlerRef = useLatest(eventHandler);

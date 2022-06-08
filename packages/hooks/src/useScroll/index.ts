@@ -23,8 +23,10 @@ function useScroll(
       if (!el) {
         return;
       }
+      // 更新位置
       const updatePosition = () => {
         let newPosition: Position;
+        // 如果是 document 的处理
         if (el === document) {
           if (document.scrollingElement) {
             newPosition = {
@@ -49,18 +51,19 @@ function useScroll(
             };
           }
         } else {
+          // 获取到元素的位置
           newPosition = {
             left: (el as Element).scrollLeft,
             top: (el as Element).scrollTop,
           };
         }
+        // 是否更新位置信息函数
         if (shouldUpdateRef.current(newPosition)) {
           setPosition(newPosition);
         }
       };
-
       updatePosition();
-
+      // 监听 scroll 事件
       el.addEventListener('scroll', updatePosition);
       return () => {
         el.removeEventListener('scroll', updatePosition);

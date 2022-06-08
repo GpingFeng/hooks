@@ -6,7 +6,7 @@ import useUnmount from '../useUnmount';
 import { isFunction } from '../utils';
 
 type noop = (...args: any) => any;
-
+// 用来处理防抖函数的 Hook。
 function useDebounceFn<T extends noop>(fn: T, options?: DebounceOptions) {
   if (process.env.NODE_ENV === 'development') {
     if (!isFunction(fn)) {
@@ -16,6 +16,7 @@ function useDebounceFn<T extends noop>(fn: T, options?: DebounceOptions) {
 
   const fnRef = useLatest(fn);
 
+  // 默认是 1000 毫秒
   const wait = options?.wait ?? 1000;
 
   const debounced = useMemo(

@@ -1,15 +1,22 @@
 import { useCallback, useRef, useState } from 'react';
 
-const useDynamicList = <T>(initialList: T[] = []) => {
+// 管理动态列表状态，并能生成唯一 key 的 hook
+const useDynamicList = <T>(
+  // 列表的初始值
+  initialList: T[] = [],
+) => {
+  // 当前的指向
   const counterRef = useRef(-1);
-
+  // key List
   const keyList = useRef<number[]>([]);
-
+  // 设置唯一的 key，通过 ref 保证 key 的唯一性
   const setKey = useCallback((index: number) => {
+    // 每次都加1
     counterRef.current += 1;
+    // 将 key 值放入到列表中
     keyList.current.splice(index, 0, counterRef.current);
   }, []);
-
+  // 列表设置
   const [list, setList] = useState(() => {
     initialList.forEach((_, index) => {
       setKey(index);
@@ -17,9 +24,12 @@ const useDynamicList = <T>(initialList: T[] = []) => {
     return initialList;
   });
 
+  // 重置 list，重新设置 list 的值
   const resetList = useCallback((newList: T[]) => {
+    // 先重置 key
     keyList.current = [];
     setList(() => {
+      // 设置 key
       newList.forEach((_, index) => {
         setKey(index);
       });
@@ -27,6 +37,7 @@ const useDynamicList = <T>(initialList: T[] = []) => {
     });
   }, []);
 
+  // 在指定位置插入元素
   const insert = useCallback((index: number, item: T) => {
     setList((l) => {
       const temp = [...l];
@@ -36,13 +47,16 @@ const useDynamicList = <T>(initialList: T[] = []) => {
     });
   }, []);
 
+  // 获取某个元素的 key 值
   const getKey = useCallback((index: number) => keyList.current[index], []);
 
+  // 获取某个值的下标
   const getIndex = useCallback(
     (key: number) => keyList.current.findIndex((ele) => ele === key),
     [],
   );
 
+  // 将两个列表合并
   const merge = useCallback((index: number, items: T[]) => {
     setList((l) => {
       const temp = [...l];
@@ -54,6 +68,7 @@ const useDynamicList = <T>(initialList: T[] = []) => {
     });
   }, []);
 
+  // 替换
   const replace = useCallback((index: number, item: T) => {
     setList((l) => {
       const temp = [...l];
@@ -62,6 +77,7 @@ const useDynamicList = <T>(initialList: T[] = []) => {
     });
   }, []);
 
+  // 移除
   const remove = useCallback((index: number) => {
     setList((l) => {
       const temp = [...l];

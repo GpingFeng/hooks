@@ -24,6 +24,7 @@ const initRect: Rect = {
   width: NaN,
 };
 
+// 初始值
 const initState: State = {
   text: '',
   ...initRect,
@@ -37,7 +38,10 @@ function getRectFromSelection(selection: Selection | null): Rect {
   if (selection.rangeCount < 1) {
     return initRect;
   }
+  // https://developer.mozilla.org/zh-CN/docs/Web/API/Selection/getRangeAt
+  // 返回一个包含当前选区内容的区域对象。
   const range = selection.getRangeAt(0);
+  // 获取它的位置
   const { height, width, top, left, right, bottom } = range.getBoundingClientRect();
   return {
     height,
@@ -49,7 +53,10 @@ function getRectFromSelection(selection: Selection | null): Rect {
   };
 }
 
-function useTextSelection(target?: BasicTarget<Document | Element>): State {
+function useTextSelection(
+  // DOM element or ref
+  target?: BasicTarget<Document | Element>,
+): State {
   const [state, setState] = useState(initState);
 
   const stateRef = useRef(state);
@@ -81,11 +88,16 @@ function useTextSelection(target?: BasicTarget<Document | Element>): State {
         if (stateRef.current.text) {
           setState({ ...initState });
         }
+        // https://developer.mozilla.org/zh-CN/docs/Web/API/Window/getSelection
+        // 返回一个 Selection 对象，表示用户选择的文本范围或光标的当前位置。
         const selObj = window.getSelection();
         if (!selObj) return;
+        // https://developer.mozilla.org/zh-CN/docs/Web/API/Selection/removeAllRanges
+        // Selection.removeAllRanges() 方法会从当前 selection 对象中移除所有的 range 对象，取消所有的选择只 留下anchorNode 和focusNode属性并将其设置为 null。
         selObj.removeAllRanges();
       };
 
+      // 监听 mouseup 和 mousedown
       el.addEventListener('mouseup', mouseupHandler);
 
       document.addEventListener('mousedown', mousedownHandler);
@@ -96,6 +108,7 @@ function useTextSelection(target?: BasicTarget<Document | Element>): State {
       };
     },
     [],
+    // 目标元素
     target,
   );
 

@@ -67,6 +67,7 @@ function useCounter(initialValue: number = 0, options: Options = {}) {
   return [
     current,
     {
+      // 返回的函数，都用 useMemoizedFn 包一层
       inc: useMemoizedFn(inc),
       dec: useMemoizedFn(dec),
       set: useMemoizedFn(set),

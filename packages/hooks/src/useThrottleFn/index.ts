@@ -7,6 +7,7 @@ import { isFunction } from '../utils';
 
 type noop = (...args: any) => any;
 
+// 用来处理函数节流的 Hook。
 function useThrottleFn<T extends noop>(fn: T, options?: ThrottleOptions) {
   if (process.env.NODE_ENV === 'development') {
     if (!isFunction(fn)) {
@@ -20,6 +21,7 @@ function useThrottleFn<T extends noop>(fn: T, options?: ThrottleOptions) {
 
   const throttled = useMemo(
     () =>
+      // 最终都是调用了 lodash 的节流函数
       throttle(
         (...args: Parameters<T>): ReturnType<T> => {
           return fnRef.current(...args);

@@ -53,6 +53,7 @@ export function useResponsive() {
   if (windowExists && !listening) {
     info = {};
     calculate();
+    // 监听 resize 事件
     window.addEventListener('resize', handleResize);
     listening = true;
   }

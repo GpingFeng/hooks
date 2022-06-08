@@ -1,4 +1,5 @@
 import { useState } from 'react';
+// https://www.npmjs.com/package/screenfull
 import screenfull from 'screenfull';
 import useLatest from '../useLatest';
 import useMemoizedFn from '../useMemoizedFn';
@@ -14,7 +15,9 @@ export interface Options {
 const useFullscreen = (target: BasicTarget, options?: Options) => {
   const { onExit, onEnter } = options || {};
 
+  // 退出全屏触发
   const onExitRef = useLatest(onExit);
+  // 全屏触发
   const onEnterRef = useLatest(onEnter);
 
   const [state, setState] = useState(false);
@@ -32,6 +35,7 @@ const useFullscreen = (target: BasicTarget, options?: Options) => {
     }
   };
 
+  // 进入全屏
   const enterFullscreen = () => {
     const el = getTargetElement(target);
     if (!el) {
@@ -48,6 +52,7 @@ const useFullscreen = (target: BasicTarget, options?: Options) => {
     }
   };
 
+  // 退出全屏
   const exitFullscreen = () => {
     if (!state) {
       return;
@@ -57,6 +62,7 @@ const useFullscreen = (target: BasicTarget, options?: Options) => {
     }
   };
 
+  // 切换模式
   const toggleFullscreen = () => {
     if (state) {
       exitFullscreen();

@@ -11,6 +11,7 @@ function useThrottleEffect(
 ) {
   const [flag, setFlag] = useState({});
 
+  // 用来处理函数节流的 Hook。
   const { run } = useThrottleFn(() => {
     setFlag({});
   }, options);
@@ -19,6 +20,7 @@ function useThrottleEffect(
     return run();
   }, deps);
 
+  // 只有在 flag 变化的时候，才执行 effect 函数
   useUpdateEffect(effect, [flag]);
 }
 

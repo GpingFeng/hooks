@@ -1,3 +1,5 @@
+// https://developer.mozilla.org/zh-CN/docs/Web/API/Intersection_Observer_API
+// https://www.npmjs.com/package/intersection-observer
 import 'intersection-observer';
 import { useState } from 'react';
 import type { BasicTarget } from '../utils/domTarget';
@@ -20,7 +22,7 @@ function useInViewport(target: BasicTarget, options?: Options) {
       if (!el) {
         return;
       }
-
+      // Intersection Observer API 提供了一种异步检测目标元素与祖先元素或 viewport 相交情况变化的方法。
       const observer = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {

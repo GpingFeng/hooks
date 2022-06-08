@@ -1,3 +1,4 @@
+// https://developer.mozilla.org/zh-CN/docs/Web/API/Element/scrollTop
 const getScrollTop = (el: Document | Element) => {
   if (el === document || el === document.body) {
     return Math.max(
@@ -8,7 +9,7 @@ const getScrollTop = (el: Document | Element) => {
   }
   return (el as Element).scrollTop;
 };
-
+// https://developer.mozilla.org/zh-CN/docs/Web/API/Element/scrollHeight
 const getScrollHeight = (el: Document | Element) => {
   return (
     (el as Element).scrollHeight ||
@@ -16,6 +17,7 @@ const getScrollHeight = (el: Document | Element) => {
   );
 };
 
+// https://developer.mozilla.org/zh-CN/docs/Web/API/Element/clientHeight
 const getClientHeight = (el: Document | Element) => {
   return (
     (el as Element).clientHeight ||

@@ -120,4 +120,5 @@ export interface Result<TData, TParams extends any[]> {
   mutate: Fetch<TData, TParams>['mutate'];
 }
 
+// 定时器返回值
 export type Timeout = ReturnType<typeof setTimeout>;

@@ -17,18 +17,24 @@ interface loadResult {
   status: Status;
 }
 
+// 加载 Script
 const loadScript = (path: string, props = {}): loadResult => {
+  // 看是否已经加载
   const script = document.querySelector(`script[src="${path}"]`);
 
   if (!script) {
+    // 创建标签
     const newScript = document.createElement('script');
+    // 设置 src
     newScript.src = path;
-
+    // 设置 props 值
     Object.keys(props).forEach((key) => {
       newScript[key] = props[key];
     });
 
+    // 设置 loading 状态
     newScript.setAttribute('data-status', 'loading');
+    // 加到 document.body 中
     document.body.appendChild(newScript);
 
     return {
@@ -39,10 +45,12 @@ const loadScript = (path: string, props = {}): loadResult => {
 
   return {
     ref: script,
+    // 状态
     status: (script.getAttribute('data-status') as Status) || 'ready',
   };
 };
 
+// 加载 CSS
 const loadCss = (path: string, props = {}): loadResult => {
   const css = document.querySelector(`link[href="${path}"]`);
   if (!css) {
@@ -50,12 +58,14 @@ const loadCss = (path: string, props = {}): loadResult => {
 
     newCss.rel = 'stylesheet';
     newCss.href = path;
+    // 设置 props
     Object.keys(props).forEach((key) => {
       newCss[key] = props[key];
     });
     // IE9+
     const isLegacyIECss = 'hideFocus' in newCss;
     // use preload in IE Edge (to detect load errors)
+    // preload 预加载
     if (isLegacyIECss && newCss.relList) {
       newCss.rel = 'preload';
       newCss.as = 'style';
@@ -86,10 +96,12 @@ const useExternal = (path?: string, options?: Options) => {
       return;
     }
     const pathname = path.replace(/[|#].*$/, '');
+    // 判断是 CSS 类型
     if (options?.type === 'css' || (!options?.type && /(^css!|\.css$)/.test(pathname))) {
       const result = loadCss(path, options?.css);
       ref.current = result.ref;
       setStatus(result.status);
+      // 判断是是 JavaScript 类型
     } else if (options?.type === 'js' || (!options?.type && /(^js!|\.js$)/.test(pathname))) {
       const result = loadScript(path, options?.js);
       ref.current = result.ref;
@@ -106,6 +118,7 @@ const useExternal = (path?: string, options?: Options) => {
       return;
     }
 
+    // 每个 path 加载的次数
     if (EXTERNAL_USED_COUNT[path] === undefined) {
       EXTERNAL_USED_COUNT[path] = 1;
     } else {
@@ -118,6 +131,7 @@ const useExternal = (path?: string, options?: Options) => {
       setStatus(targetStatus);
     };
 
+    // 监听文件下载的情况
     ref.current.addEventListener('load', handler);
     ref.current.addEventListener('error', handler);
     return () => {

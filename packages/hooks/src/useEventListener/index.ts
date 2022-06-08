@@ -36,7 +36,15 @@ function useEventListener<K extends keyof WindowEventMap>(
 ): void;
 function useEventListener(eventName: string, handler: noop, options: Options): void;
 
-function useEventListener(eventName: string, handler: noop, options: Options = {}) {
+// 优雅的使用 addEventListener。
+function useEventListener(
+  // 事件名称
+  eventName: string,
+  // 处理函数
+  handler: noop,
+  // 设置
+  options: Options = {},
+) {
   const handlerRef = useLatest(handler);
 
   useEffectWithTarget(
@@ -50,12 +58,17 @@ function useEventListener(eventName: string, handler: noop, options: Options = {
         return handlerRef.current(event);
       };
 
+      // 监听事件
       targetElement.addEventListener(eventName, eventListener, {
+        // listener 会在该类型的事件捕获阶段传播到该 EventTarget 时触发。
         capture: options.capture,
+        // listener 在添加之后最多只调用一次。如果是 true，listener 会在其被调用之后自动移除。
         once: options.once,
+        // 设置为 true 时，表示 listener 永远不会调用 preventDefault() 。如果 listener 仍然调用了这个函数，客户端将会忽略它并抛出一个控制台警告
         passive: options.passive,
       });
 
+      // 移除事件
       return () => {
         targetElement.removeEventListener(eventName, eventListener, {
           capture: options.capture,

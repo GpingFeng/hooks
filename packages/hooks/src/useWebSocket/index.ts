@@ -31,9 +31,15 @@ export interface Result {
   webSocketIns?: WebSocket;
 }
 
-export default function useWebSocket(socketUrl: string, options: Options = {}): Result {
+export default function useWebSocket(
+  // socketUrl。必填，webSocket 地址
+  socketUrl: string,
+  // 连接配置项
+  options: Options = {},
+): Result {
   const {
     reconnectLimit = 3,
+    // 重试时间间隔（ms）
     reconnectInterval = 3 * 1000,
     manual = false,
     onOpen,
@@ -57,8 +63,10 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
   const [latestMessage, setLatestMessage] = useState<WebSocketEventMap['message']>();
   const [readyState, setReadyState] = useState<ReadyState>(ReadyState.Closed);
 
+  // 重新连接
   const reconnect = () => {
     if (
+      // 没有超过连接次数或者没有连接成功
       reconnectTimesRef.current < reconnectLimit &&
       websocketRef.current?.readyState !== ReadyState.Open
     ) {
@@ -66,6 +74,7 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
         clearTimeout(reconnectTimerRef.current);
       }
 
+      // 定时重连
       reconnectTimerRef.current = setTimeout(() => {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         connectWs();
@@ -74,6 +83,7 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
     }
   };
 
+  // 创建链接
   const connectWs = () => {
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
@@ -83,6 +93,7 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
       websocketRef.current.close();
     }
 
+    // new WebSocket
     const ws = new WebSocket(socketUrl, protocols);
     setReadyState(ReadyState.Connecting);
 
@@ -91,6 +102,7 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
         return;
       }
       reconnect();
+      // 错误的回调
       onErrorRef.current?.(event, ws);
       setReadyState(ws.readyState || ReadyState.Closed);
     };
@@ -98,6 +110,7 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
       if (unmountedRef.current) {
         return;
       }
+      // webSocket 连接成功回调
       onOpenRef.current?.(event, ws);
       reconnectTimesRef.current = 0;
       setReadyState(ws.readyState || ReadyState.Open);
@@ -106,6 +119,7 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
       if (unmountedRef.current) {
         return;
       }
+      // webSocket 收到消息回调
       onMessageRef.current?.(message, ws);
       setLatestMessage(message);
     };
@@ -114,6 +128,7 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
         return;
       }
       reconnect();
+      // webSocket 关闭回调
       onCloseRef.current?.(event, ws);
       setReadyState(ws.readyState || ReadyState.Closed);
     };
@@ -121,6 +136,7 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
     websocketRef.current = ws;
   };
 
+  // 发送消息函数
   const sendMessage: WebSocket['send'] = (message) => {
     if (readyState === ReadyState.Open) {
       websocketRef.current?.send(message);
@@ -129,11 +145,13 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
     }
   };
 
+  // 手动连接 webSocket，如果当前已有连接，则关闭后重新连接
   const connect = () => {
     reconnectTimesRef.current = 0;
     connectWs();
   };
 
+  // 手动断开 webSocket 连接
   const disconnect = () => {
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
@@ -144,6 +162,7 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
   };
 
   useEffect(() => {
+    // 如果手动，则不会触发连接
     if (!manual) {
       connect();
     }
@@ -159,7 +178,9 @@ export default function useWebSocket(socketUrl: string, options: Options = {}): 
     sendMessage: useMemoizedFn(sendMessage),
     connect: useMemoizedFn(connect),
     disconnect: useMemoizedFn(disconnect),
+    // 当前 webSocket 连接状态
     readyState,
+    // webSocket 实例
     webSocketIns: websocketRef.current,
   };
 }

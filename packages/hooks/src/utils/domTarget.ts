@@ -23,9 +23,12 @@ export function getTargetElement<T extends TargetType>(target: BasicTarget<T>, d
   let targetElement: TargetValue<T>;
 
   if (isFunction(target)) {
+    // 支持函数获取
     targetElement = target();
+    // 假如 ref，则返回 current
   } else if ('current' in target) {
     targetElement = target.current;
+    // 支持 DOM
   } else {
     targetElement = target;
   }
