@@ -7,7 +7,11 @@
  */
 
 import { useAsyncEffect } from 'ahooks';
-import React, { useState } from 'react';
+import React, {
+  useState,
+  // ,
+  // useEffect
+} from 'react';
 
 function mockCheck(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -23,6 +27,20 @@ export default () => {
   useAsyncEffect(async () => {
     setPass(await mockCheck());
   }, []);
+
+  // useEffect(() => {
+  //   const asyncFun = async () => {
+  //     setPass(await mockCheck());
+  //   };
+  //   asyncFun();
+  // }, []);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     setPass(await mockCheck());
+  //   })();
+  //   // asyncFun();
+  // }, []);
 
   return (
     <div>

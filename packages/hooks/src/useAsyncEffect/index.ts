@@ -20,7 +20,8 @@ function useAsyncEffect(
   }
   useEffect(() => {
     const e = effect();
-    // 这个标识可以通过 yield 语句可以增加一些检查点，如果发现当前 effect 已经被清理，会停止继续往下执行。
+    // 这个标识可以通过 yield 语句可以增加一些检查点
+    // 如果发现当前 effect 已经被清理，会停止继续往下执行。
     let cancelled = false;
     // 执行函数
     async function execute() {
@@ -28,7 +29,8 @@ function useAsyncEffect(
       if (isAsyncGenerator(e)) {
         while (true) {
           const result = await e.next();
-          // 全部执行完成
+          // Generate function 全部执行完成
+          // 或者当前的 effect 已经被清理
           if (result.done || cancelled) {
             break;
           }
@@ -39,7 +41,7 @@ function useAsyncEffect(
     }
     execute();
     return () => {
-      // 全部执行完才赋值为 true
+      // 当前 effect 已经被清理
       cancelled = true;
     };
   }, deps);
