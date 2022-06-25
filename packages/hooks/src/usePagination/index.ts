@@ -28,7 +28,7 @@ const usePagination = <TData extends Data, TParams extends Params>(
 
   // 获取请求结果，total 总梳理
   const total = result.data?.total || 0;
-  // 获取到总的页面
+  // 获取到总的页数
   const totalPage = useMemo(() => Math.ceil(total / pageSize), [pageSize, total]);
 
   // 分页 onChange 方法

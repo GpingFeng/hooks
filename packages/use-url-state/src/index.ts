@@ -47,7 +47,7 @@ const useUrlState = <S extends UrlState = UrlState>(
   const mergedParseOptions = { ...baseParseConfig, ...parseOptions };
   const mergedStringifyOptions = { ...baseStringifyConfig, ...stringifyOptions };
 
-  // useLocation钩子返回表示当前URL的location对象。您可以将它想象成一个useState，它在URL更改时返回一个新位置。
+  // useLocation钩子返回表示当前URL的location对象。您可以将它想象成一个useState，它在URL更改时返回一个新值。
   const location = rc.useLocation();
 
   // https://v5.reactrouter.com/web/api/Hooks/usehistory

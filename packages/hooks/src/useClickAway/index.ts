@@ -5,8 +5,11 @@ import useEffectWithTarget from '../utils/useEffectWithTarget';
 
 // 监听目标元素外的点击事件。
 export default function useClickAway<T extends Event = Event>(
+  // 触发函数
   onClickAway: (event: T) => void,
+  // DOM 节点或者 Ref，支持数组
   target: BasicTarget | BasicTarget[],
+  // 指定需要监听的事件，支持数组
   eventName: string | string[] = 'click',
 ) {
   const onClickAwayRef = useLatest(onClickAway);

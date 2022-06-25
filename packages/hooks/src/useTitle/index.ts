@@ -17,6 +17,7 @@ function useTitle(title: string, options: Options = DEFAULT_OPTIONS) {
   }, [title]);
 
   useUnmount(() => {
+    // 组件卸载后，恢复上一次的 title
     if (options.restoreOnUnmount) {
       document.title = titleRef.current;
     }

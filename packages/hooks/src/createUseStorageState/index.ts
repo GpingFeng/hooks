@@ -72,7 +72,7 @@ export function createUseStorageState(getStorage: () => Storage | undefined) {
       if (isUndef(value)) {
         setState(undefined);
         storage?.removeItem(key);
-        // 如果是function，则用来吹 state
+        // 如果是function，则用来传入 state，并返回结果
       } else if (isFunction(value)) {
         const currentState = value(state);
         try {
