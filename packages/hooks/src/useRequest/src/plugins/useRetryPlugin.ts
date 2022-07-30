@@ -15,7 +15,7 @@ const useRetryPlugin: Plugin<any, any[]> = (
   const timerRef = useRef<Timeout>();
   // 重试的次数
   const countRef = useRef(0);
-
+  // 标识，是否是由重试发起
   const triggerByRetry = useRef(false);
 
   if (!retryCount) {

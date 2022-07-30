@@ -11,7 +11,6 @@ const useCachePlugin: Plugin<any, any[]> = (
   fetchInstance,
   {
     // 请求唯一标识。如果设置了 cacheKey，我们会启用缓存机制。同一个 cacheKey 的数据全局同步。
-    // useRequest 会将当前请求成功的数据缓存起来。下次组件初始化时，如果有缓存数据，我们会优先返回缓存数据，然后在背后发送新请求，也就是 SWR 的能力。
     cacheKey,
     // 设置数据缓存时间，超过该时间，我们会清空该条缓存数据。
     cacheTime = 5 * 60 * 1000,
@@ -33,9 +32,10 @@ const useCachePlugin: Plugin<any, any[]> = (
     if (customSetCache) {
       customSetCache(cachedData);
     } else {
+      // 调用 cache utils 中的 setCache 函数
       cache.setCache(key, cacheTime, cachedData);
     }
-    // 触发 key 的所有事件
+    // 触发 key 的所有事件。假如 key 相同，就可以共享缓存的数据。
     cacheSubscribe.trigger(key, cachedData.data);
   };
 
@@ -58,7 +58,7 @@ const useCachePlugin: Plugin<any, any[]> = (
     // get data from cache when init
     const cacheData = _getCache(cacheKey);
     if (cacheData && Object.hasOwnProperty.call(cacheData, 'data')) {
-      // 直接使用缓存中 data 和 params 进行替代
+      // 直接使用缓存中 data 和 params 进行替代，先将结果返回。
       fetchInstance.state.data = cacheData.data;
       fetchInstance.state.params = cacheData.params;
       // staleTime为-1，或者还存在于新鲜时间内，则设置 loading 为 false
@@ -66,7 +66,7 @@ const useCachePlugin: Plugin<any, any[]> = (
         fetchInstance.state.loading = false;
       }
     }
-    // 订阅同一个 cacheKey 的请求事件列表
+    // 订阅同一个 cacheKey 的更新。假如两个都是用的同一个 cacheKey，那么它们的内容是可以全局同享的。
     // subscribe same cachekey update, trigger update
     unSubscribeRef.current = cacheSubscribe.subscribe(cacheKey, (data) => {
       fetchInstance.setState({ data });
@@ -110,15 +110,17 @@ const useCachePlugin: Plugin<any, any[]> = (
     // 请求阶段
     onRequest: (service, args) => {
       // 看 promise 有没有缓存
+      // 假如 promise 已经执行完成，则为 undefined。也就是没有同样 cacheKey 在执行。
       let servicePromise = cachePromise.getCachePromise(cacheKey);
 
       // If has servicePromise, and is not trigger by self, then use it
-      // 如果有servicePromise，并且不是自己触发的，那么就使用它
+      // 如果有servicePromise，并且不等于之前自己触发的请求，那么就使用它。
       if (servicePromise && servicePromise !== currentPromiseRef.current) {
         return { servicePromise };
       }
 
       servicePromise = service(...args);
+      // 保存本次触发的 promise 值
       currentPromiseRef.current = servicePromise;
       // 设置 promise 缓存
       cachePromise.setCachePromise(cacheKey, servicePromise);

@@ -1,15 +1,15 @@
 type Listener = (data: any) => void;
-// 事件列表
+// 事件对象
 const listeners: Record<string, Listener[]> = {};
 
-// 触发某个 key 的所有事件
+// 触发某个属性(cacheKey)的所有事件
 const trigger = (key: string, data: any) => {
   if (listeners[key]) {
     listeners[key].forEach((item) => item(data));
   }
 };
 
-// 每个 key 维护一个事件列表
+// 订阅事件，每个属性(cacheKey)维护一个事件列表
 const subscribe = (key: string, listener: Listener) => {
   if (!listeners[key]) {
     listeners[key] = [];

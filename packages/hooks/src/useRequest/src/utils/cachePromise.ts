@@ -18,6 +18,7 @@ const setCachePromise = (cacheKey: CachedKey, promise: Promise<any>) => {
   // 不使用 promise.finally 来兼容
   promise
     .then((res) => {
+      // 在 then 和 cache 中都将 promise 缓存删除，而不是在 finally 中
       cachePromise.delete(cacheKey);
       return res;
     })

@@ -15,11 +15,12 @@ const useAutoRunPlugin: Plugin<any, any[]> = (
 
   // useUpdateEffect 用法等同于 useEffect，但是会忽略首次执行，只在依赖更新时执行。
   useUpdateEffect(() => {
+    // manual 值为 false
     if (!manual && ready) {
       hasAutoRun.current = true;
       fetchInstance.run(...defaultParams);
     }
-    // 首次 ready 的时候执行
+    // ready 的变化执行
   }, [ready]);
 
   useUpdateEffect(() => {
@@ -28,6 +29,8 @@ const useAutoRunPlugin: Plugin<any, any[]> = (
     }
     if (!manual) {
       hasAutoRun.current = true;
+      // 这个参数只有在内部会用到，外部 API 中暂时没有提及，感觉可以暴露
+      // 依赖变化的时候的处理逻辑，假如有传的话，就执行该逻辑，否则请求请求
       if (refreshDepsAction) {
         refreshDepsAction();
       } else {
