@@ -59,10 +59,13 @@ const useDynamicList = <T>(
   // 将两个列表合并
   const merge = useCallback((index: number, items: T[]) => {
     setList((l) => {
+      // 维护一个临时列表
       const temp = [...l];
+      // 设置 key
       items.forEach((_, i) => {
         setKey(index + i);
       });
+      // 合并
       temp.splice(index, 0, ...items);
       return temp;
     });
@@ -93,17 +96,22 @@ const useDynamicList = <T>(
     });
   }, []);
 
+  // 移动元素
   const move = useCallback((oldIndex: number, newIndex: number) => {
     if (oldIndex === newIndex) {
       return;
     }
     setList((l) => {
+      // 维护一个临时数组
       const newList = [...l];
+      // 过滤掉「源数据下标项」
       const temp = newList.filter((_, index: number) => index !== oldIndex);
+      // 插入到目标下标项中
       temp.splice(newIndex, 0, newList[oldIndex]);
 
       // move keys if necessary
       try {
+        // 维护 keyList
         const keyTemp = keyList.current.filter((_, index: number) => index !== oldIndex);
         keyTemp.splice(newIndex, 0, keyList.current[oldIndex]);
         keyList.current = keyTemp;
@@ -115,6 +123,7 @@ const useDynamicList = <T>(
     });
   }, []);
 
+  // 在列表末尾添加元素	
   const push = useCallback((item: T) => {
     setList((l) => {
       setKey(l.length);
@@ -122,6 +131,7 @@ const useDynamicList = <T>(
     });
   }, []);
 
+  // 移除末尾项
   const pop = useCallback(() => {
     // remove keys if necessary
     try {
@@ -133,6 +143,7 @@ const useDynamicList = <T>(
     setList((l) => l.slice(0, l.length - 1));
   }, []);
 
+  // 在列表起始位置添加元素
   const unshift = useCallback((item: T) => {
     setList((l) => {
       setKey(0);
@@ -140,6 +151,7 @@ const useDynamicList = <T>(
     });
   }, []);
 
+  // 移除起始位置元素
   const shift = useCallback(() => {
     // remove keys if necessary
     try {
@@ -150,6 +162,7 @@ const useDynamicList = <T>(
     setList((l) => l.slice(1, l.length));
   }, []);
 
+  // 校准排序
   const sortList = useCallback(
     (result: T[]) =>
       result
