@@ -38,6 +38,7 @@ function useCounter(initialValue: number = 0, options: Options = {}) {
     });
   });
 
+  // 设置值。value 值支持 number 和 function
   const setValue = (value: ValueParam) => {
     setCurrent((c) => {
       const target = isNumber(value) ? value : value(c);
@@ -48,10 +49,12 @@ function useCounter(initialValue: number = 0, options: Options = {}) {
     });
   };
 
+  // 增加。增加维度默认为 1
   const inc = (delta: number = 1) => {
     setValue((c) => c + delta);
   };
 
+  // 减少。减少区间默认为 1
   const dec = (delta: number = 1) => {
     setValue((c) => c - delta);
   };
@@ -60,6 +63,7 @@ function useCounter(initialValue: number = 0, options: Options = {}) {
     setValue(value);
   };
 
+  // 重设会初始值
   const reset = () => {
     setValue(initialValue);
   };

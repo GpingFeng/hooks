@@ -18,6 +18,7 @@ export interface FormattedRes {
   milliseconds: number;
 }
 
+// 计算目标时间和当前时间之间还有多少毫秒
 const calcLeft = (t?: TDate) => {
   if (!t) {
     return 0;
@@ -25,6 +26,7 @@ const calcLeft = (t?: TDate) => {
   // https://stackoverflow.com/questions/4310953/invalid-date-in-safari
   // 计算剩余时间，目标时间 - 当前时间 > 0
   const left = dayjs(t).valueOf() - new Date().getTime();
+  // 小于 0 的时候，返回 0，代表结束
   if (left < 0) {
     return 0;
   }
@@ -52,7 +54,7 @@ const useCountdown = (options?: Options) => {
     onEnd,
   } = options || {};
 
-  // 如果初始 state 需要通过复杂计算获得，则可以传入一个函数，在函数中计算并返回初始的 state，此函数只在初始渲染时被调用
+  // 初始化 state
   const [timeLeft, setTimeLeft] = useState(() => calcLeft(targetDate));
 
   const onEndRef = useLatest(onEnd);
@@ -81,6 +83,7 @@ const useCountdown = (options?: Options) => {
     return () => clearInterval(timer);
   }, [targetDate, interval]);
 
+  // 对结果进行 format
   const formattedRes = useMemo(() => {
     return parseMs(timeLeft);
   }, [timeLeft]);
