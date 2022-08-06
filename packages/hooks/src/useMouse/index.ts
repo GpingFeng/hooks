@@ -58,6 +58,7 @@ export default (target?: BasicTarget) => {
       const targetElement = getTargetElement(target);
       if (targetElement) {
         const { left, top, width, height } = targetElement.getBoundingClientRect();
+        // 计算鼠标相对于元素的位置
         newState.elementPosX = left + window.pageXOffset;
         newState.elementPosY = top + window.pageYOffset;
         newState.elementX = pageX - newState.elementPosX;
