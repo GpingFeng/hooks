@@ -22,6 +22,7 @@ function observer<T extends Record<string, any>>(initialVal: T, cb: () => void):
     return initialVal;
   }
 
+  // 通过 Proxy 代理进行拦截和更新
   const proxy = new Proxy<T>(initialVal, {
     get(target, key, receiver) {
       const res = Reflect.get(target, key, receiver);
