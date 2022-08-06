@@ -227,9 +227,11 @@ function useKeyPress(keyFilter: KeyFilter, eventHandler: EventHandler, option?: 
         }
       };
 
+      // 监听传入事件
       for (const eventName of events) {
         el?.addEventListener?.(eventName, callbackHandler);
       }
+      // 取消监听
       return () => {
         for (const eventName of events) {
           el?.removeEventListener?.(eventName, callbackHandler);
