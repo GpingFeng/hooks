@@ -63,7 +63,7 @@ export default function useWebSocket(
   const [latestMessage, setLatestMessage] = useState<WebSocketEventMap['message']>();
   const [readyState, setReadyState] = useState<ReadyState>(ReadyState.Closed);
 
-  // 重新连接
+  // 重试。重新连接
   const reconnect = () => {
     if (
       // 没有超过连接次数或者没有连接成功
@@ -85,10 +85,11 @@ export default function useWebSocket(
 
   // 创建链接
   const connectWs = () => {
+    // 假如存在重试的逻辑，则清除掉其定时器
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current);
     }
-
+    // 先关闭之前的
     if (websocketRef.current) {
       websocketRef.current.close();
     }
@@ -97,15 +98,18 @@ export default function useWebSocket(
     const ws = new WebSocket(socketUrl, protocols);
     setReadyState(ReadyState.Connecting);
 
+    // webSocket 错误回调
     ws.onerror = (event) => {
       if (unmountedRef.current) {
         return;
       }
+      // 进行重试
       reconnect();
       // 错误的回调
       onErrorRef.current?.(event, ws);
       setReadyState(ws.readyState || ReadyState.Closed);
     };
+    // webSocket 连接成功回调
     ws.onopen = (event) => {
       if (unmountedRef.current) {
         return;
@@ -115,6 +119,7 @@ export default function useWebSocket(
       reconnectTimesRef.current = 0;
       setReadyState(ws.readyState || ReadyState.Open);
     };
+    // webSocket 收到消息回调
     ws.onmessage = (message: WebSocketEventMap['message']) => {
       if (unmountedRef.current) {
         return;
@@ -123,6 +128,7 @@ export default function useWebSocket(
       onMessageRef.current?.(message, ws);
       setLatestMessage(message);
     };
+    // webSocket 关闭回调
     ws.onclose = (event) => {
       if (unmountedRef.current) {
         return;
@@ -132,7 +138,7 @@ export default function useWebSocket(
       onCloseRef.current?.(event, ws);
       setReadyState(ws.readyState || ReadyState.Closed);
     };
-
+    // 保存 websocket  实例
     websocketRef.current = ws;
   };
 
