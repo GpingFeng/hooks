@@ -18,7 +18,7 @@ export type Options = {
   exactMatch?: boolean;
 };
 
-// 键盘事件 keyCode 别名
+// 键盘事件别名对应的 code 值。
 const aliasKeyCodeMap = {
   '0': 48,
   '1': 49,
@@ -193,12 +193,15 @@ function genFilterKey(event: KeyboardEvent, keyFilter: keyType, exactMatch: bool
  * @returns () => Boolean
  */
 function genKeyFormater(keyFilter: KeyFilter, exactMatch: boolean): KeyPredicate {
+  // 支持自定义函数
   if (isFunction(keyFilter)) {
     return keyFilter;
   }
+  // 支持 keyCode、别名、组合键
   if (isString(keyFilter) || isNumber(keyFilter)) {
     return (event: KeyboardEvent) => genFilterKey(event, keyFilter, exactMatch);
   }
+  // 支持数组
   if (Array.isArray(keyFilter)) {
     return (event: KeyboardEvent) =>
       keyFilter.some((item) => genFilterKey(event, item, exactMatch));
@@ -209,6 +212,7 @@ function genKeyFormater(keyFilter: KeyFilter, exactMatch: boolean): KeyPredicate
 const defaultEvents: KeyEvent[] = ['keydown'];
 // 监听键盘按键，支持组合键，支持按键别名。
 function useKeyPress(keyFilter: KeyFilter, eventHandler: EventHandler, option?: Options) {
+  // 默认 defaultEvents 是 keydown
   const { events = defaultEvents, target, exactMatch = false } = option || {};
   const eventHandlerRef = useLatest(eventHandler);
   const keyFilterRef = useLatest(keyFilter);
@@ -222,6 +226,7 @@ function useKeyPress(keyFilter: KeyFilter, eventHandler: EventHandler, option?: 
 
       const callbackHandler = (event: KeyboardEvent) => {
         const genGuard: KeyPredicate = genKeyFormater(keyFilterRef.current, exactMatch);
+        // 判断是否触发配置 keyFilter 场景
         if (genGuard(event)) {
           return eventHandlerRef.current?.(event);
         }
