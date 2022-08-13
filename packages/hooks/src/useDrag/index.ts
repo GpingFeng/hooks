@@ -20,6 +20,7 @@ const useDrag = <T>(data: T, target: BasicTarget, options: Options = {}) => {
 
       const onDragStart = (event: React.DragEvent) => {
         optionsRef.current.onDragStart?.(event);
+        // 设置自定义数据。
         event.dataTransfer.setData('custom', JSON.stringify(data));
       };
 
