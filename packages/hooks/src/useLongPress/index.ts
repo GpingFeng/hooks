@@ -50,7 +50,7 @@ function useLongPress(
         if (timerRef.current) {
           clearTimeout(timerRef.current);
         }
-        // 有开始，才会触发长按事件
+        // 判断是否达到长按时间
         if (isTriggeredRef.current) {
           onLongPressEndRef.current?.(event);
         }
@@ -75,10 +75,12 @@ function useLongPress(
       }
 
       return () => {
+        // 清除定时器
         if (timerRef.current) {
           clearTimeout(timerRef.current);
           isTriggeredRef.current = false;
         }
+        // 清除对应事件
         if (!touchSupported) {
           targetElement.removeEventListener('mousedown', onStart);
           targetElement.removeEventListener('mouseup', onEndWithClick);
