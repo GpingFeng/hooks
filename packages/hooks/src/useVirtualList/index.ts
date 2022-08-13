@@ -40,13 +40,14 @@ const useVirtualList = <T = any>(
   // 需要渲染出来的 list
   const [targetList, setTargetList] = useState<{ index: number; data: T }[]>([]);
 
-  // 计算出可视区域内的数量
+  // 根据外部容器以及内部每一项的高度，计算出可视区域内的数量
   const getVisibleCount = (containerHeight: number, fromIndex: number) => {
     // 知道每一行的高度 - number 类型，则根据容器计算
     if (isNumber(itemHeightRef.current)) {
       return Math.ceil(containerHeight / itemHeightRef.current);
     }
 
+    // 动态指定每个元素的高度情况
     let sum = 0;
     let endIndex = 0;
     for (let i = fromIndex; i < list.length; i++) {
@@ -65,9 +66,11 @@ const useVirtualList = <T = any>(
 
   // 根据 scrollTop 计算上面有多少个 DOM 节点
   const getOffset = (scrollTop: number) => {
+    // 每一项固定高度
     if (isNumber(itemHeightRef.current)) {
       return Math.floor(scrollTop / itemHeightRef.current) + 1;
     }
+    // 动态指定每个元素的高度情况
     let sum = 0;
     let offset = 0;
     // 从 0 开始
@@ -85,10 +88,12 @@ const useVirtualList = <T = any>(
 
   // 获取上部高度
   const getDistanceTop = (index: number) => {
+    // 每一项高度相同
     if (isNumber(itemHeightRef.current)) {
       const height = index * itemHeightRef.current;
       return height;
     }
+    // 动态指定每个元素的高度情况，则 itemHeightRef.current 为函数
     const height = list
       .slice(0, index)
       // reduce 计算总和
@@ -99,9 +104,11 @@ const useVirtualList = <T = any>(
 
   // 计算总的高度
   const totalHeight = useMemo(() => {
+    // 每一项高度相同
     if (isNumber(itemHeightRef.current)) {
       return list.length * itemHeightRef.current;
     }
+    // 动态指定每个元素的高度情况
     // @ts-ignore
     return list.reduce((sum, _, index) => sum + itemHeightRef.current(index, list[index]), 0);
   }, [list]);
@@ -122,7 +129,7 @@ const useVirtualList = <T = any>(
         clientHeight,
       } = container;
 
-      // 上面有多少个 Item
+      // 根据外部容器的 scrollTop 算出已经“滚过”多少项
       const offset = getOffset(scrollTop);
       // 可视区域的 DOM 个数
       const visibleCount = getVisibleCount(clientHeight, offset);
@@ -134,7 +141,7 @@ const useVirtualList = <T = any>(
 
       // 获取上方高度
       const offsetTop = getDistanceTop(start);
-      // 设置内部容器的高度，总的盖度 - 上方高度
+      // 设置内部容器的高度，总的高度 - 上方高度
       // @ts-ignore
       wrapper.style.height = totalHeight - offsetTop + 'px';
       // margin top 为上方高度
@@ -150,7 +157,7 @@ const useVirtualList = <T = any>(
     }
   };
 
-  // 当外部容器的 size 发生变化的时候，触发
+  // 当外部容器的 size 发生变化的时候，触发计算逻辑
   useEffect(() => {
     if (!size?.width || !size?.height) {
       return;
@@ -159,7 +166,7 @@ const useVirtualList = <T = any>(
     calculateRange();
   }, [size?.width, size?.height, list]);
 
-  // 监听 scroll 事件
+  // 监听外部容器的 scroll 事件
   useEventListener(
     'scroll',
     (e) => {
@@ -169,6 +176,7 @@ const useVirtualList = <T = any>(
         return;
       }
       e.preventDefault();
+      // 计算
       calculateRange();
     },
     {
