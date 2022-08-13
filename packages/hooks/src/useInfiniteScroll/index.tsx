@@ -51,6 +51,7 @@ const useInfiniteScroll = <TData extends Data>(
     // 入参，将上次请求返回的数据整合到新的参数中
     async (lastData?: TData) => {
       const currentData = await service(lastData);
+      // 首次请求，则直接设置
       if (!lastData) {
         setFinalData(currentData);
       } else {
@@ -86,6 +87,7 @@ const useInfiniteScroll = <TData extends Data>(
     },
   );
 
+  // 同步加载更多
   const loadMore = () => {
     // 假如没有更多，直接返回
     if (noMore) return;
@@ -94,6 +96,7 @@ const useInfiniteScroll = <TData extends Data>(
     run(finalData);
   };
 
+  // 异步加载更多，返回的值是 Promise，需要自行处理异常
   const loadMoreAsync = () => {
     if (noMore) return Promise.reject();
     setLoadingMore(true);
