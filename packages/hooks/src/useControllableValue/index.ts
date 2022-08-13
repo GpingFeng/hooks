@@ -23,9 +23,9 @@ function useControllableValue<T = any>(
   props: StandardProps<T>,
 ): [T, (v: SetStateAction<T>) => void];
 function useControllableValue<T = any>(
-  // props，组件的 props	
+  // props，组件的 props
   props?: Props,
-  // 可选配置项	
+  // 可选配置项
   options?: Options<T>,
 ): [T, (v: SetStateAction<T>, ...args: any[]) => void];
 function useControllableValue<T = any>(props: Props = {}, options: Options<T> = {}) {
@@ -68,12 +68,12 @@ function useControllableValue<T = any>(props: Props = {}, options: Options<T> = 
   // 设置值方法
   function setState(v: SetStateAction<T>, ...args: any[]) {
     const r = isFunction(v) ? v(stateRef.current) : v;
-    // 非受控组件，则更新状态
+    // 非受控组件，则自己更新状态
     if (!isControlled) {
       stateRef.current = r;
       update();
     }
-    // 修改值时，触发 trigger 函数
+    // 传了 trigger 函数。则触发 trigger 函数，trigger 函数默认为 onChange 事件
     if (props[trigger]) {
       props[trigger](r, ...args);
     }
