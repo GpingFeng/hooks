@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import useSet from '../index';
 
 const setUp = <K>(initialSet?: Iterable<K>) => renderHook(() => useSet(initialSet));
@@ -18,8 +18,10 @@ describe('useSet', () => {
 
   it('should init empty set if no initial set provided', () => {
     const { result } = setUp();
-
     expect(result.current[0]).toEqual(new Set());
+
+    const { result: result1 } = setUp(undefined);
+    expect(result1.current[0]).toEqual(new Set());
   });
 
   it('should have an initially provided key', () => {

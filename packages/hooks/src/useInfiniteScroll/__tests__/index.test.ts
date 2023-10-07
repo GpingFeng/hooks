@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import useInfiniteScroll from '..';
 import type { Data, Service, InfiniteScrollOptions } from '../types';
 import { sleep } from '../../utils/testingHelpers';
@@ -37,25 +37,25 @@ describe('useInfiniteScroll', () => {
 
   it('should auto load', async () => {
     const { result } = setup(mockRequest);
-    expect(result.current.loading).toBeTruthy();
+    expect(result.current.loading).toBe(true);
     await act(async () => {
       jest.advanceTimersByTime(1000);
     });
-    expect(result.current.loading).toBeFalsy();
+    expect(result.current.loading).toBe(false);
   });
 
   it('loadMore should be work', async () => {
     const { result } = setup(mockRequest, { manual: true });
     const { loadMore, loading } = result.current;
-    expect(loading).toBeFalsy();
+    expect(loading).toBe(false);
     act(() => {
       loadMore();
     });
-    expect(result.current.loadingMore).toBeTruthy();
+    expect(result.current.loadingMore).toBe(true);
     await act(async () => {
       jest.advanceTimersByTime(1000);
     });
-    expect(result.current.loadingMore).toBeFalsy();
+    expect(result.current.loadingMore).toBe(false);
   });
 
   it('noMore should be true when isNoMore is true', async () => {
@@ -67,12 +67,12 @@ describe('useInfiniteScroll', () => {
       jest.advanceTimersByTime(1000);
     });
 
-    expect(result.current.noMore).toBeFalsy();
+    expect(result.current.noMore).toBe(false);
     act(() => loadMore());
     await act(async () => {
       jest.advanceTimersByTime(1000);
     });
-    expect(result.current.noMore).toBeTruthy();
+    expect(result.current.noMore).toBe(true);
   });
 
   it('should auto load when scroll to bottom', async () => {
@@ -87,12 +87,12 @@ describe('useInfiniteScroll', () => {
       isNoMore: (d) => d?.nextId === undefined,
     });
     // not work when loading
-    expect(result.current.loading).toBeTruthy();
+    expect(result.current.loading).toBe(true);
     events['scroll']();
     await act(async () => {
       jest.advanceTimersByTime(1000);
     });
-    expect(result.current.loading).toBeFalsy();
+    expect(result.current.loading).toBe(false);
 
     // mock scroll
     Object.defineProperties(targetEl, {
@@ -109,18 +109,18 @@ describe('useInfiniteScroll', () => {
     act(() => {
       events['scroll']();
     });
-    expect(result.current.loadingMore).toBeTruthy();
+    expect(result.current.loadingMore).toBe(true);
     await act(async () => {
       jest.advanceTimersByTime(1000);
     });
-    expect(result.current.loadingMore).toBeFalsy();
+    expect(result.current.loadingMore).toBe(false);
 
     // not work when no more
-    expect(result.current.noMore).toBeTruthy();
+    expect(result.current.noMore).toBe(true);
     act(() => {
       events['scroll']();
     });
-    expect(result.current.loadingMore).toBeFalsy();
+    expect(result.current.loadingMore).toBe(false);
 
     mockAddEventListener.mockRestore();
   });
@@ -159,6 +159,35 @@ describe('useInfiniteScroll', () => {
     });
   });
 
+  it('reload data should be latest', async () => {
+    let listCount = 5;
+    const mockRequestFn = async () => {
+      await sleep(1000);
+      return {
+        list: Array.from({
+          length: listCount,
+        }).map((_, index) => index + 1),
+        nextId: listCount,
+        hasMore: listCount > 2,
+      };
+    };
+
+    const { result } = setup(mockRequestFn);
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+    expect(result.current.data).toMatchObject({ list: [1, 2, 3, 4, 5], nextId: 5 });
+
+    listCount = 3;
+    await act(async () => {
+      result.current.reload();
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.data).toMatchObject({ list: [1, 2, 3], nextId: 3 });
+  });
+
   it('mutate should be work', async () => {
     const { result } = setup(mockRequest);
     const { mutate } = result.current;
@@ -180,9 +209,9 @@ describe('useInfiniteScroll', () => {
       onSuccess,
     });
     const { cancel } = result.current;
-    expect(result.current.loading).toBeTruthy();
+    expect(result.current.loading).toBe(true);
     act(() => cancel());
-    expect(result.current.loading).toBeFalsy();
+    expect(result.current.loading).toBe(false);
     expect(onSuccess).not.toBeCalled();
   });
 
@@ -225,7 +254,7 @@ describe('useInfiniteScroll', () => {
     act(() => {
       loadMoreAsync().then((res) => {
         expect(res).toMatchObject({ list: [1, 2, 3], nextId: 1 });
-        expect(result.current.loading).toBeFalsy();
+        expect(result.current.loading).toBe(false);
       });
     });
     await act(async () => {
@@ -247,5 +276,87 @@ describe('useInfiniteScroll', () => {
     await act(async () => {
       Promise.resolve();
     });
+  });
+
+  it('loading should be true when reload after loadMore', async () => {
+    const { result } = setup(mockRequest);
+    expect(result.current.loading).toBeTruthy();
+    const { reload, loadMore } = result.current;
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.loading).toBeFalsy();
+
+    act(() => {
+      loadMore();
+      reload();
+    });
+    expect(result.current.loading).toBeTruthy();
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.loading).toBeFalsy();
+  });
+
+  it('loading should be true when reloadAsync after loadMore', async () => {
+    const { result } = setup(mockRequest);
+    expect(result.current.loading).toBeTruthy();
+    const { reloadAsync, loadMore } = result.current;
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.loading).toBeFalsy();
+
+    act(() => {
+      loadMore();
+      reloadAsync();
+    });
+    expect(result.current.loading).toBeTruthy();
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.loading).toBeFalsy();
+  });
+
+  it('list can be null or undefined', async () => {
+    // @ts-ignore
+    const { result } = setup(async function () {
+      await sleep(1000);
+      count++;
+      return {
+        list: Math.random() < 0.5 ? null : undefined,
+        nextId: count,
+      };
+    });
+
+    expect(result.current.loading).toBeTruthy();
+
+    const { loadMore } = result.current;
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.loading).toBeFalsy();
+
+    act(() => {
+      loadMore();
+    });
+  });
+
+  it('error result', async () => {
+    const { result } = setup(async () => {
+      throw new Error('error message');
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.error?.message).toBe('error message');
   });
 });

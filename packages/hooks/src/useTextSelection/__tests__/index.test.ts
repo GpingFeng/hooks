@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import useTextSelection from '../index';
 
 // test about Resize Observer see https://github.com/que-etc/resize-observer-polyfill/tree/master/tests
@@ -16,7 +16,7 @@ describe('useTextSelection', () => {
     });
   }
 
-  function downMouse(x: number, y: number) {
+  function downMouse(x: number, y: number, options?: MouseEventInit) {
     act(() => {
       document.dispatchEvent(
         new MouseEvent('mousedown', {
@@ -24,6 +24,7 @@ describe('useTextSelection', () => {
           clientY: y,
           screenX: x,
           screenY: y,
+          ...options,
         }),
       );
     });
@@ -78,18 +79,39 @@ describe('useTextSelection', () => {
     const hook = renderHook(() => useTextSelection(() => document));
 
     expect(hook.result.current.text).toBe('');
-    expect(hook.result.current.left).toBe(NaN);
-    expect(hook.result.current.right).toBe(NaN);
-    expect(hook.result.current.top).toBe(NaN);
-    expect(hook.result.current.bottom).toBe(NaN);
-    expect(hook.result.current.height).toBe(NaN);
-    expect(hook.result.current.width).toBe(NaN);
+    expect(hook.result.current.left).toBeNaN();
+    expect(hook.result.current.right).toBeNaN();
+    expect(hook.result.current.top).toBeNaN();
+    expect(hook.result.current.bottom).toBeNaN();
+    expect(hook.result.current.height).toBeNaN();
+    expect(hook.result.current.width).toBeNaN();
 
     downMouse(0, 0);
     upMouse(100, 100);
 
     expect(hook.result.current.left).toBe(10);
     expect(hook.result.current.text).toBe('on textSelection');
+    hook.unmount();
+  });
+
+  it('keep/cancel the selected text range', async () => {
+    initGetSelection({ text: 'aaa' });
+
+    const hook = renderHook(() => useTextSelection(() => document));
+
+    expect(hook.result.current.text).toBe('');
+    downMouse(0, 0);
+    upMouse(100, 100);
+    expect(hook.result.current.text).toBe('aaa');
+
+    // trigger the secondary button of mouse (usually the right button)
+    downMouse(0, 0, { button: 2 });
+    expect(hook.result.current.text).toBe('aaa');
+
+    // // trigger the main button of mouse (usually the left button)
+    downMouse(0, 0, { button: 0 });
+    expect(hook.result.current.text).toBe('');
+
     hook.unmount();
   });
 });

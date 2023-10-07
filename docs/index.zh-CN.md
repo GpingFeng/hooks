@@ -36,6 +36,10 @@ footer: Open-source MIT Licensed | Copyright © 2019-present<br />Powered by [du
 $ npm install --save ahooks
 # or
 $ yarn add ahooks
+# or
+$ pnpm add ahooks
+# or
+$ bun add ahooks
 ```
 
 ## 🔨 使用
@@ -69,7 +73,7 @@ $ pnpm start
 
 ## 👥 交流讨论
 
-<img src="https://user-images.githubusercontent.com/12526493/141303172-68f25577-c7b7-4ff7-bdff-25fd0f4d5214.JPG" width="300" />
+<img src="https://user-images.githubusercontent.com/60802048/201606568-9ce53e3f-2e1c-4dc3-869f-fb3cf6196904.JPG" width="200" style='display:inline'/><img src="https://user-images.githubusercontent.com/60802048/201606896-31abd486-cc3e-4cc4-beea-1b244a4c5595.JPG" width="200" style='display:inline'/><img src="https://user-images.githubusercontent.com/60802048/201606953-c33f3f52-eb91-42bc-8da7-1e941e823144.JPG" width="200" style='display:inline'/>
 
 [1]: https://www.npmjs.com/package/ahooks
 [2]: https://npmjs.org/package/ahooks

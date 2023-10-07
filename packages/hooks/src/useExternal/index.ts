@@ -1,10 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
 
-export interface Options {
-  type?: 'js' | 'css';
+type JsOptions = {
+  type: 'js';
+  js?: Partial<HTMLScriptElement>;
+  keepWhenUnused?: boolean;
+};
+
+type CssOptions = {
+  type: 'css';
+  css?: Partial<HTMLStyleElement>;
+  keepWhenUnused?: boolean;
+};
+
+type DefaultOptions = {
+  type?: never;
   js?: Partial<HTMLScriptElement>;
   css?: Partial<HTMLStyleElement>;
-}
+  keepWhenUnused?: boolean;
+};
+
+export type Options = JsOptions | CssOptions | DefaultOptions;
 
 // {[path]: count}
 // remove external when no used
@@ -126,7 +141,7 @@ const useExternal = (path?: string, options?: Options) => {
 
       EXTERNAL_USED_COUNT[path] -= 1;
 
-      if (EXTERNAL_USED_COUNT[path] === 0) {
+      if (EXTERNAL_USED_COUNT[path] === 0 && !options?.keepWhenUnused) {
         ref.current?.remove();
       }
 

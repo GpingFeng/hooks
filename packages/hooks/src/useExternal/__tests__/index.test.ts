@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import useExternal, { Options } from '../index';
 import { fireEvent } from '@testing-library/react';
 
@@ -94,6 +94,18 @@ describe('useExternal', () => {
     });
     unmount();
     expect(document.querySelector('script')).toBeNull();
+  });
+  it('should not remove when keepWhenUnused is true', () => {
+    // https://github.com/alibaba/hooks/discussions/2163
+    const { result, unmount } = setup('b.js', {
+      keepWhenUnused: true,
+    });
+    const script = document.querySelector('script') as HTMLScriptElement;
+    act(() => {
+      fireEvent.load(script);
+    });
+    unmount();
+    expect(result.current).toBe('ready');
   });
 
   it('css preload should work in IE Edge', () => {

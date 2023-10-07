@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import useKeyPress from '../index';
 
@@ -71,5 +71,67 @@ describe('useKeyPress ', () => {
     fireEvent.keyDown(document, { key: 'a', keyCode: 65 });
     expect(callback.mock.calls.length).toBe(2);
     unmount();
+  });
+
+  it('meta key should be work in keyup event', async () => {
+    renderHook(() =>
+      useKeyPress(['meta'], callback, {
+        events: ['keyup'],
+      }),
+    );
+
+    fireEvent.keyUp(document, { key: 'meta', keyCode: 91, metaKey: false });
+    expect(callback).toBeCalled();
+  });
+
+  it('test `keyFilter` function parameter', async () => {
+    const callback1 = jest.fn();
+    const callback2 = jest.fn();
+
+    // all keys can trigger callback
+    const hook1 = renderHook(() => useKeyPress(() => true, callback1));
+    fireEvent.keyDown(document, { key: '0', keyCode: 48 });
+    fireEvent.keyDown(document, { key: 'a', keyCode: 65 });
+    expect(callback1.mock.calls.length).toBe(2);
+
+    // only some keys can trigger callback
+    const hook2 = renderHook(() => useKeyPress((e) => ['0', 'meta'].includes(e.key), callback2));
+    fireEvent.keyDown(document, { key: '0', keyCode: 48 });
+    fireEvent.keyDown(document, { key: '1', keyCode: 49 });
+    fireEvent.keyDown(document, { key: 'ctrl', keyCode: 17, ctrlKey: true });
+    fireEvent.keyDown(document, { key: 'meta', keyCode: 91, metaKey: true });
+    expect(callback2.mock.calls.length).toBe(2);
+
+    hook1.unmount();
+    hook2.unmount();
+  });
+
+  it('test key in `eventHandler` parameter', async () => {
+    let pressedKey;
+    const KEYS = ['c', 'shift.c', 'shift.ctrl.c'];
+    const callbackKey = (e, key) => {
+      pressedKey = key;
+    };
+
+    // test `exactMatch: true` props
+    const hook1 = renderHook(() => useKeyPress(KEYS, callbackKey, { exactMatch: true }));
+    fireEvent.keyDown(document, { key: 'c', keyCode: 67 });
+    expect(pressedKey).toBe('c');
+    fireEvent.keyDown(document, { key: 'c', keyCode: 67, shiftKey: true });
+    expect(pressedKey).toBe('shift.c');
+    fireEvent.keyDown(document, { key: 'c', keyCode: 67, shiftKey: true, ctrlKey: true });
+    expect(pressedKey).toBe('shift.ctrl.c');
+
+    // test `exactMatch: false`(default) props
+    const hook2 = renderHook(() => useKeyPress(KEYS, callbackKey));
+    fireEvent.keyDown(document, { key: 'c', keyCode: 67 });
+    expect(pressedKey).toBe('c');
+    fireEvent.keyDown(document, { key: 'c', keyCode: 67, shiftKey: true });
+    expect(pressedKey).toBe('c');
+    fireEvent.keyDown(document, { key: 'c', keyCode: 67, shiftKey: true, ctrlKey: true });
+    expect(pressedKey).toBe('c');
+
+    hook2.unmount();
+    hook1.unmount();
   });
 });

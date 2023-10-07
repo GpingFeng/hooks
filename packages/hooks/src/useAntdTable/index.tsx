@@ -29,6 +29,11 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
   const result = usePagination<TData, TParams>(service, {
     manual: true,
     ...rest,
+    onSuccess(...args) {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      runSuccessRef.current = true;
+      rest.onSuccess?.(...args);
+    },
   });
 
   const { params = [], run } = result;
@@ -39,11 +44,12 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
 
   const allFormDataRef = useRef<Record<string, any>>({});
   const defaultDataSourceRef = useRef([]);
+  const runSuccessRef = useRef(false);
 
   const isAntdV4 = !!form?.getInternalHooks;
 
   // get current active field values
-  const getActivetFieldValues = () => {
+  const getActiveFieldValues = () => {
     if (!form) {
       return {};
     }
@@ -69,7 +75,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
     if (!form) {
       return Promise.resolve({});
     }
-    const activeFieldsValue = getActivetFieldValues();
+    const activeFieldsValue = getActiveFieldValues();
     const fields = Object.keys(activeFieldsValue);
 
     // antd 4
@@ -109,7 +115,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
   };
 
   const changeType = () => {
-    const activeFieldsValue = getActivetFieldValues();
+    const activeFieldsValue = getActiveFieldValues();
     allFormDataRef.current = {
       ...allFormDataRef.current,
       ...activeFieldsValue,
@@ -155,15 +161,27 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
     if (form) {
       form.resetFields();
     }
-    _submit();
+    _submit({
+      ...(defaultParams?.[0] || {}),
+      pageSize: options.defaultPageSize || options.defaultParams?.[0]?.pageSize || 10,
+      current: 1,
+    });
   };
 
   const submit = (e?: any) => {
     e?.preventDefault?.();
-    _submit();
+    _submit(
+      runSuccessRef.current
+        ? undefined
+        : {
+            pageSize: options.defaultPageSize || options.defaultParams?.[0]?.pageSize || 10,
+            current: 1,
+            ...(defaultParams?.[0] || {}),
+          },
+    );
   };
 
-  const onTableChange = (pagination: any, filters: any, sorter: any) => {
+  const onTableChange = (pagination: any, filters: any, sorter: any, extra: any) => {
     const [oldPaginationParams, ...restParams] = params || [];
     run(
       // @ts-ignore
@@ -173,6 +191,7 @@ const useAntdTable = <TData extends Data, TParams extends Params>(
         pageSize: pagination.pageSize,
         filters,
         sorter,
+        extra,
       },
       ...restParams,
     );
